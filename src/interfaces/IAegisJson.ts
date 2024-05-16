@@ -14,7 +14,7 @@ interface Db{
     "entries": Array<Entry>;
 }
 
-interface Entry{
+export interface Entry{
     "type": string; // "totp", "steam"
     "uuid": string;
     "name": string; // service name
