@@ -1,4 +1,4 @@
-export default interface BitwardenJson{
+export default interface IBitwardenJson{
     encrypted: boolean;
     folders: Array<Folder>;
     items: Array<Item>

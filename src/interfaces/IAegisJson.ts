@@ -1,4 +1,4 @@
-export default interface AegisJson{
+export default interface IAegisJson{
     "version": number;
     "header": Header;
     "db": Db;
