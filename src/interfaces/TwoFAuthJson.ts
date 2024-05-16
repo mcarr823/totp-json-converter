@@ -1,4 +1,4 @@
-interface TwoFAuthJson{
+export default interface TwoFAuthJson{
     app: string; //eg. 2fauth_v5.1.1
     schema: number;
     datetime: string; //eg. 2024-05-14T08:57:35.542766Z
