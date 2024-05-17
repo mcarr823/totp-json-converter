@@ -1,6 +1,6 @@
 import ITwoFAuthJson, { IToken } from "@/interfaces/ITwoFAuthJson";
 
-class TwoFAuthJson{
+export default class TwoFAuthJson{
 
     entries: Array<Token>;
 

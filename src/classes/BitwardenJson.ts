@@ -1,6 +1,6 @@
 import IBitwardenJson, { IItem } from "@/interfaces/IBitwardenJson";
 
-class BitwardenJson{
+export default class BitwardenJson{
 
     entries: Array<Token>;
 
