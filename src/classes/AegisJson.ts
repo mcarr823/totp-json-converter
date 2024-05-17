@@ -1,13 +1,18 @@
-import IAegisJson, { Entry } from "@/interfaces/IAegisJson";
+import IAegisJson, { IEntry } from "@/interfaces/IAegisJson";
 
 export default class AegisJson{
 
     entries: Array<Token>;
 
-    constructor(str: string){
-        const json = JSON.parse(str) as IAegisJson;
+    constructor(json: IAegisJson){
         this.entries = json.db.entries.map(e => new Token(e));
     }
+
+    static parse(str: string){
+        const json = JSON.parse(str) as IAegisJson;
+        return new AegisJson(json);
+    }
+    
 }
 
 class Token{
@@ -20,7 +25,7 @@ class Token{
     "digits": number; // 6 for totp, 5 for steam,
     "period": number; // usually 30
 
-    constructor(data: Entry){
+    constructor(data: IEntry){
         this.type = data.type;
         this.name = data.name;
         this.issuer = data.issuer;

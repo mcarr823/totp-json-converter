@@ -4,10 +4,15 @@ class BitwardenJson{
 
     entries: Array<Token>;
 
-    constructor(str: string){
-        const json = JSON.parse(str) as IBitwardenJson;
+    constructor(json: IBitwardenJson){
         this.entries = json.items.map(e => new Token(e));
     }
+
+    static parse(str: string){
+        const json = JSON.parse(str) as IBitwardenJson;
+        return new BitwardenJson(json);
+    }
+
 }
 
 class Token{

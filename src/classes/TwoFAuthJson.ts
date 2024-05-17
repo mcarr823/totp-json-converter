@@ -4,10 +4,15 @@ class TwoFAuthJson{
 
     entries: Array<Token>;
 
-    constructor(str: string){
-        const json = JSON.parse(str) as ITwoFAuthJson;
+    constructor(json: ITwoFAuthJson){
         this.entries = json.data.map(e => new Token(e));
     }
+
+    static parse(str: string){
+        const json = JSON.parse(str) as ITwoFAuthJson;
+        return new TwoFAuthJson(json);
+    }
+    
 }
 
 class Token{
