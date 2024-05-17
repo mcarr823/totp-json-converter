@@ -2,10 +2,10 @@ export default interface ITwoFAuthJson{
     app: string; //eg. 2fauth_v5.1.1
     schema: number;
     datetime: string; //eg. 2024-05-14T08:57:35.542766Z
-    data: Array<Token>;
+    data: Array<IToken>;
 }
 
-interface Token{
+export interface IToken{
     otp_type: string; // totp, steamtotp
     account: string; //email
     service: string | null; //service name

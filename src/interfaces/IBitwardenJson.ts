@@ -1,22 +1,22 @@
 export default interface IBitwardenJson{
     encrypted: boolean;
-    folders: Array<Folder>;
-    items: Array<Item>
+    folders: Array<IFolder>;
+    items: Array<IItem>
 }
 
-interface Folder{
+interface IFolder{
     id: string;
     name: string;
 }
 
-interface Item{
+export interface IItem{
     passwordHistory: null;
     revisionDate: string;
     creationDate: string;
-    deletedDate: null,
+    deletedDate: null;
     id: string;
-    organizationId: null,
-    folderId: null,
+    organizationId: null;
+    folderId: null;
     type: number;
     reprompt: number;
     name: string;
@@ -25,49 +25,49 @@ interface Item{
     secureNote: {
       type: number;
     };
-    card: Card;
-    fields: Array<Field>;
-    login: Login,
-    identity: Identity,
-    collectionIds: null
+    card: ICard;
+    fields: Array<IField>;
+    login: ILogin;
+    identity: IIdentity;
+    collectionIds: null;
 }
 
-interface Card{
+interface ICard{
     cardholderName: string;
-    brand: null,
+    brand: null;
     number: string;
     expMonth: string;
     expYear: string;
     code: string;
 }
 
-interface Field{
+interface IField{
     name: string;
     value: string;
     type: number;
-    linkedId: null
+    linkedId: null;
 }
 
-interface Login{
-    uris: Array<LoginUri>;
+interface ILogin{
+    uris: Array<ILoginUri>;
     username: string;
     password: string;
-    totp: null
+    totp: string | null;
 }
 
-interface LoginUri{
+interface ILoginUri{
     match: null;
     uri: string;
 }
 
-interface Identity{
+interface IIdentity{
     title: string;
     firstName: string;
     middleName: string;
     lastName: string;
     address1: string;
-    address2: null,
-    address3: null,
+    address2: null;
+    address3: null;
     city: string;
     state: string;
     postalCode: string;
