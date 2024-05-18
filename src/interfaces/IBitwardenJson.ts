@@ -22,14 +22,16 @@ export interface IItem{
     name: string;
     notes: string;
     favorite: boolean;
-    secureNote: {
-      type: number;
-    };
-    card: ICard;
+    secureNote: ISecureNote | undefined;
+    card: ICard | undefined;
     fields: Array<IField>;
-    login: ILogin;
-    identity: IIdentity;
+    login: ILogin | undefined;
+    identity: IIdentity | undefined;
     collectionIds: null;
+}
+
+interface ISecureNote{
+    type: number;
 }
 
 interface ICard{
