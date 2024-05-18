@@ -16,15 +16,22 @@ export default class BitwardenJson implements IBitwardenExport{
         return JSON.stringify(this);
     }
 
-    static parse(str: string){
+    static parse(str: string) {
         const json = JSON.parse(str) as IBitwardenJson;
-        const items = json.items.map(data => {
+        const items = Array<BitwardenToken>();
+        json.items.forEach(data => {
             const { type, name, login } = data;
+            if (typeof login === 'undefined'){
+                console.error("No login node - Not a valid 2FA token");
+                return;
+            }
             const totp = login.totp;
             if (totp === null){
-                throw new Error("TOTP cannot be null");
+                console.error("TOTP cannot be null");
+                return;
             }
-            return new BitwardenToken({ type, name, totp })
+            const token = new BitwardenToken({ type, name, totp })
+            items.push(token);
         });
         return new BitwardenJson(items);
     }
@@ -59,8 +66,11 @@ class BitwardenToken implements IBitwardenExportItem{
     constructor(data : { type: number, name: string, totp: string }){
         this.type = data.type;
         this.name = data.name;
-        this.secret = data.totp;
-        this.login = { totp: `otpauth://totp/${data.totp}` };
+        this.login = { totp: data.totp };
+
+        // TODO: also add support for otpauth urls with ?secret= format
+        const index = data.totp.lastIndexOf('/');
+        this.secret = data.totp.substring(index+1);
     }
 
 }
