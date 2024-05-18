@@ -1,41 +1,63 @@
 import ITwoFAuthJson, { IToken } from "@/interfaces/ITwoFAuthJson";
-import BitwardenJson, { BitwardenToken } from "./BitwardenJson";
+import BitwardenJson from "./BitwardenJson";
+import ITwoFAuthExport, { ITwoFAuthExportItem } from "@/interfaces/ITwoFAuthExport";
+import AegisJson from "./AegisJson";
 
-export default class TwoFAuthJson{
+export default class TwoFAuthJson implements ITwoFAuthExport {
 
-    entries: Array<TwoFAuthToken>;
+    data: Array<ITwoFAuthExportItem>;
 
-    constructor(json: ITwoFAuthJson){
-        this.entries = json.data.map(e => TwoFAuthToken.parse(e));
+    constructor(data: Array<ITwoFAuthExportItem>){
+        this.data = data;
+    }
+
+    export() {
+        return JSON.stringify(this);
     }
 
     static parse(str: string){
         const json = JSON.parse(str) as ITwoFAuthJson;
-        return new TwoFAuthJson(json);
+        const data = json.data.map(TwoFAuthToken.parse);
+        return new TwoFAuthJson(data);
     }
 
-    toBitwarden(){
+    static parseAegis(json: AegisJson){
+        const items = json.db.entries.map(data => new TwoFAuthToken({
+            otp_type: "totp",
+            account: data.name,
+            service: data.issuer,
+            secret: data.info.secret,
+            digits: data.info.digits,
+            algorithm: data.info.algo,
+            period: data.info.period,
+            counter: null,
+            legacy_uri: `otpauth://totp/${data.info.secret}`
+        }));
+        return new TwoFAuthJson(items);
+    }
 
-        const result = new BitwardenJson({
-            encrypted: false,
-            folders: [],
-            items: []
-        });
-
-        this.entries
-            .map(BitwardenToken.parseTwoFAuth)
-            .forEach(e => result.entries.push(e));
-
-        return result;
-
+    static parseBitwarden(json: BitwardenJson){
+        const items = json.items.map(data => new TwoFAuthToken({
+            otp_type: "totp", // Bitwarden tokens are totp-only at the moment
+            account: '', // TODO username?
+            service: data.name,
+            secret: '',
+            digits: 6,
+            algorithm: "sha1",
+            period: 30,
+            counter: null,
+            legacy_uri: data.login.totp
+        }));
+        return new TwoFAuthJson(items);
     }
     
 }
 
-export class TwoFAuthToken{
+export class TwoFAuthToken implements ITwoFAuthExportItem{
+
     otp_type: string; // totp, steamtotp
     account: string; //email
-    service: string | null; //service name
+    service: string; //service name
     secret: string;
     digits: number; //usually 6 for totp, 5 for steamotp
     algorithm: string; //eg. sha1
@@ -43,17 +65,7 @@ export class TwoFAuthToken{
     counter: null;
     legacy_uri: string; //eg. otpauth://totp/blahblah
 
-    constructor(data: {
-        otp_type: string,
-        account: string,
-        service: string | null,
-        secret: string,
-        digits: number,
-        algorithm: string,
-        period: number,
-        counter: null,
-        legacy_uri: string
-    }){
+    constructor(data: ITwoFAuthExportItem){
         this.otp_type = data.otp_type;
         this.account = data.account;
         this.service = data.service;
@@ -66,16 +78,27 @@ export class TwoFAuthToken{
     }
 
     static parse(data: IToken){
+        const {
+            otp_type,
+            account,
+            secret,
+            digits,
+            algorithm,
+            period,
+            counter,
+            legacy_uri
+        } = data;
         return new TwoFAuthToken({
-            otp_type: data.otp_type,
-            account: data.account,
-            service: data.service,
-            secret: data.secret,
-            digits: data.digits,
-            algorithm: data.algorithm,
-            period: data.period,
-            counter: data.counter,
-            legacy_uri: data.legacy_uri
-        });
+            otp_type,
+            account,
+            service: data.service ?? '',
+            secret,
+            digits,
+            algorithm,
+            period,
+            counter,
+            legacy_uri
+        })
     }
+
 }

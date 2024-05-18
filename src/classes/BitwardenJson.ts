@@ -1,62 +1,66 @@
-import IBitwardenJson, { IItem } from "@/interfaces/IBitwardenJson";
-import { AegisToken } from "./AegisJson";
-import { TwoFAuthToken } from "./TwoFAuthJson";
+import IBitwardenJson from "@/interfaces/IBitwardenJson";
+import AegisJson from "./AegisJson";
+import TwoFAuthJson from "./TwoFAuthJson";
+import { BitwardenType } from "@/enums/BitwardenType";
+import IBitwardenExport, { IBitwardenExportItem, IBitwardenExportItemLogin } from "@/interfaces/IBitwardenExport";
 
-export default class BitwardenJson{
+export default class BitwardenJson implements IBitwardenExport{
 
-    entries: Array<BitwardenToken>;
+    items: Array<BitwardenToken>;
 
-    constructor(json: IBitwardenJson){
-        this.entries = json.items.map(e => BitwardenToken.parse(e));
+    constructor(items: Array<BitwardenToken>){
+        this.items = items;
+    }
+
+    export(): string {
+        return JSON.stringify(this);
     }
 
     static parse(str: string){
         const json = JSON.parse(str) as IBitwardenJson;
-        return new BitwardenJson(json);
+        const items = json.items.map(data => {
+            const { type, name, login } = data;
+            const totp = login.totp;
+            if (totp === null){
+                throw new Error("TOTP cannot be null");
+            }
+            return new BitwardenToken({ type, name, totp })
+        });
+        return new BitwardenJson(items);
+    }
+
+    static parseAegis(json: AegisJson){
+        const items = json.db.entries.map(data => new BitwardenToken({
+            type:BitwardenType.LOGIN,
+            name:data.name,
+            totp:data.info.secret
+        }));
+        return new BitwardenJson(items);
+    }
+
+    static parseTwoFAuth(json: TwoFAuthJson){
+        const items = json.data.map(data => new BitwardenToken({
+            type:BitwardenType.LOGIN,
+            name:data.service,
+            totp:data.secret
+        }));
+        return new BitwardenJson(items);
     }
 
 }
 
-export class BitwardenToken{
+class BitwardenToken implements IBitwardenExportItem{
 
-    "type": number;
-    "name": string;
-    totp: string | null;
+    type: number;
+    name: string;
+    secret: string; // Needed for conversions, not for export
+    login: IBitwardenExportItemLogin;
 
-    constructor(data: {
-        type: number,
-        name: string,
-        totp: string | null
-    }){
+    constructor(data : { type: number, name: string, totp: string }){
         this.type = data.type;
         this.name = data.name;
-        this.totp = data.totp;
+        this.secret = data.totp;
+        this.login = { totp: `otpauth://totp/${data.totp}` };
     }
 
-    static parse(data: IItem){
-        return new BitwardenToken({
-            type: data.type,
-            name: data.name,
-            totp: data.login.totp
-        });
-    }
-
-    static parseAegis(data: AegisToken){
-        return new BitwardenToken({
-            type: 1, // 1 is "totp"?
-            name: data.name,
-            totp: data.secret //TODO convert to otpauth://totp/PayPal?secret=
-        });
-    }
-
-    static parseTwoFAuth(data: TwoFAuthToken){
-        if (data.service === null){
-            throw new Error("Service cannot be null");
-        }
-        return new BitwardenToken({
-            type: 1, // 1 is "totp"?
-            name: data.service,
-            totp: data.legacy_uri
-        });
-    }
 }

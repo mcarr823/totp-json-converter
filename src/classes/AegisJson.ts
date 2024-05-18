@@ -1,75 +1,63 @@
-import IAegisJson, { IEntry } from "@/interfaces/IAegisJson";
-import BitwardenJson, { BitwardenToken } from "./BitwardenJson";
+import IAegisJson from "@/interfaces/IAegisJson";
+import BitwardenJson from "./BitwardenJson";
+import IAegisExport, { IAegisExportEntry } from "@/interfaces/IAegisExport";
+import TwoFAuthJson from "./TwoFAuthJson";
 
-export default class AegisJson{
+export default class AegisJson implements IAegisExport{
 
-    entries: Array<AegisToken>;
+    db: {
+        entries: Array<IAegisExportEntry>;
+    };
 
-    constructor(json: IAegisJson){
-        this.entries = json.db.entries.map(e => AegisToken.parse(e));
+    constructor(entries: Array<IAegisExportEntry>){
+        this.db = { entries };
+    }
+
+    export(){
+        return JSON.stringify(this);
     }
 
     static parse(str: string){
         const json = JSON.parse(str) as IAegisJson;
-        return new AegisJson(json);
+        const entries = json.db.entries.map<IAegisExportEntry>(data => {
+            const { type, name, issuer, info } = data;
+            return { type, name, issuer, info }
+        });
+        return new AegisJson(entries);
     }
 
-    toBitwarden(){
-
-        const result = new BitwardenJson({
-            encrypted: false,
-            folders: [],
-            items: []
+    static parseBitwarden(json: BitwardenJson){
+        const items = json.items.map<IAegisExportEntry>(data => {
+            return {
+                type: "totp",
+                name: '', // TODO username?
+                issuer: data.name,
+                info: {
+                    secret: data.secret,
+                    digits: 6,
+                    algo: "sha1",
+                    period: 30,
+                }
+            }
         });
+        return new AegisJson(items);
+    }
 
-        this.entries
-            .map(BitwardenToken.parseAegis)
-            .forEach(e => result.entries.push(e));
-
-        return result;
-
+    static parseTwoFAuth(json: TwoFAuthJson){
+        const items = json.data.map<IAegisExportEntry>(data => {
+            return {
+                type: data.otp_type,
+                name: data.account,
+                issuer: data.service,
+                info: {
+                    secret: data.secret,
+                    digits: data.digits,
+                    algo: data.algorithm,
+                    period: data.period,
+                }
+            }
+        });
+        return new AegisJson(items);
     }
     
-}
-
-export class AegisToken{
-
-    "type": string; // "totp", "steam"
-    "name": string; // service name
-    "issuer": string;
-    "secret": string;
-    "algo": string; // eg. "SHA1"
-    "digits": number; // 6 for totp, 5 for steam,
-    "period": number; // usually 30
-
-    constructor(data : {
-        type: string,
-        name: string,
-        issuer: string,
-        secret: string,
-        algo: string,
-        digits: number,
-        period: number
-    }){
-        this.type = data.type;
-        this.name = data.name;
-        this.issuer = data.issuer;
-        this.secret = data.secret;
-        this.algo = data.algo;
-        this.digits = data.digits;
-        this.period = data.period;
-    }
-
-    static parse(data: IEntry){
-        return new AegisToken({
-            type: data.type,
-            name: data.name,
-            issuer: data.issuer,
-            secret: data.info.secret,
-            algo: data.info.algo,
-            digits: data.info.digits,
-            period: data.info.period,
-        });
-    }
-
 }
