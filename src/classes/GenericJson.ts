@@ -1,10 +1,10 @@
-import BitwardenJson from "./BitwardenJson";
-import AegisJson from "./AegisJson";
-import TwoFAuthJson from "./TwoFAuthJson";
 import { FormatNames } from "@/enums/FormatNames";
 import IAegisExport, { IAegisExportEntry } from "@/interfaces/IAegisExport";
 import IBitwardenExport, { IBitwardenExportItem } from "@/interfaces/IBitwardenExport";
 import ITwoFAuthExport, { ITwoFAuthExportItem } from "@/interfaces/ITwoFAuthExport";
+import IAegisJson from "@/interfaces/IAegisJson";
+import IBitwardenJson from "@/interfaces/IBitwardenJson";
+import { BitwardenType } from "@/enums/BitwardenType";
 
 export default class GenericJson{
 
@@ -23,7 +23,7 @@ export default class GenericJson{
     }
 
     parseAegis(str: string){
-        const json = JSON.parse(str) as AegisJson;
+        const json = JSON.parse(str) as IAegisJson;
         return json.db.entries.map<GenericJsonEntry>(data => {
             const { type, name, issuer, info } = data;
             const {secret, algo, digits, period } = info;
@@ -32,22 +32,37 @@ export default class GenericJson{
     }
 
     parseBitwarden(str: string){
-        const json = BitwardenJson.parse(str);
-        return json.items.map<GenericJsonEntry>(data => {
-            return {
+        const json = JSON.parse(str) as IBitwardenJson;
+        const items = Array<GenericJsonEntry>();
+        json.items.forEach(data => {
+            const { name, login } = data;
+            if (typeof login === 'undefined'){
+                console.error("No login node - Not a valid 2FA token");
+                return;
+            }
+            const totp = login.totp;
+            if (totp === null){
+                console.error("TOTP cannot be null");
+                return;
+            }
+            const index = totp.lastIndexOf('/');
+            const secret = totp.substring(index+1);
+
+            items.push({
                 type: "totp",
                 name: '', // TODO username?
-                issuer: data.name,
-                secret: data.secret,
+                issuer: name,
+                secret,
                 digits: 6,
                 algo: "sha1",
                 period: 30,
-            }
+            })
         });
+        return items
     }
 
     parseTwoFAuth(str: string){
-        const json = JSON.parse(str) as TwoFAuthJson;
+        const json = JSON.parse(str) as ITwoFAuthExport;
         return json.data.map<GenericJsonEntry>(data => {
             return {
                 type: data.otp_type,
@@ -95,13 +110,19 @@ export default class GenericJson{
     }
 
     exportBitwarden(): string{
+        const items = Array<IBitwardenExportItem>()
+        this.entries.forEach(data => {
+            const { issuer, secret } = data;
+            if (data.type !== 'totp'){
+                console.error("Bitwarden does not support this type of token");
+                return
+            }
+            const type = BitwardenType.LOGIN;
+            const login = { totp:`otpauth://totp/${secret}` };
+            items.push({ type, name:issuer, login })
+        })
         const json: IBitwardenExport = {
-            items: this.entries.map<IBitwardenExportItem>(data => {
-                const { issuer, secret } = data;
-                const type = BitwardenJson.parseType(data.type);
-                const login = { totp:`otpauth://totp/${secret}` };
-                return { type, name:issuer, login }
-            })
+            items
         }
         return JSON.stringify(json);
     }
