@@ -32,7 +32,7 @@ export default class GenericJson{
     }
 
     parseBitwarden(str: string){
-        const json = JSON.parse(str) as BitwardenJson;
+        const json = BitwardenJson.parse(str);
         return json.items.map<GenericJsonEntry>(data => {
             return {
                 type: "totp",
@@ -97,10 +97,10 @@ export default class GenericJson{
     exportBitwarden(): string{
         const json: IBitwardenExport = {
             items: this.entries.map<IBitwardenExportItem>(data => {
-                const { name, secret } = data;
+                const { issuer, secret } = data;
                 const type = BitwardenJson.parseType(data.type);
                 const login = { totp:`otpauth://totp/${secret}` };
-                return { type, name, login }
+                return { type, name:issuer, login }
             })
         }
         return JSON.stringify(json);
@@ -109,16 +109,32 @@ export default class GenericJson{
     exportTwoFAuth(): string{
         const json: ITwoFAuthExport = {
             data: this.entries.map<ITwoFAuthExportItem>(data => {
+
+                const { secret, digits, period } = data;
+                
+                const name = [];
+                const encodedIssuer = encodeURIComponent(data.issuer);
+                if (data.issuer.length > 0) name.push(encodedIssuer);
+                if (data.name.length > 0) name.push(encodeURIComponent(data.name));
+
+                var legacy_uri = 'otpauth://totp/';
+                if (name.length > 0){
+                    // %3A = ":" encoded
+                    legacy_uri += name.join('%3A')+`?issuer=${encodedIssuer}&secret=${data.secret}`;
+                }else{
+                    legacy_uri += data.secret;
+                }
+
                 return {
-                    "otp_type": data.type,
-                    "account": data.name,
-                    "service": data.issuer,
-                    "secret": data.secret,
-                    "digits": data.digits,
-                    "algorithm": data.algo,
-                    "period": data.period,
-                    "counter": null,
-                    "legacy_uri": `otpauth://totp/${data.secret}`
+                    otp_type: data.type,
+                    account: data.name,
+                    service: data.issuer,
+                    secret,
+                    digits,
+                    algorithm: data.algo,
+                    period,
+                    counter: null,
+                    legacy_uri
                 }
             })
         }
