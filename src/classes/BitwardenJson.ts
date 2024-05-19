@@ -54,6 +54,16 @@ export default class BitwardenJson implements IBitwardenExport{
         return new BitwardenJson(items);
     }
 
+    static parseType(type: string){
+        if (type === 'totp'){
+            return BitwardenType.LOGIN;
+        }else if (type === 'steam'){
+            throw new Error("Bitwarden does not currently support steam OTP");
+        }else{
+            throw new Error("Bitwarden does not support this type of token");
+        }
+    }
+
 }
 
 class BitwardenToken implements IBitwardenExportItem{
