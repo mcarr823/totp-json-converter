@@ -1,5 +1,10 @@
 import GenericJson from "@/classes/GenericJson";
 import { FormatNames } from "@/enums/FormatNames";
+import IAegisExport from "@/interfaces/IAegisExport";
+import IBitwardenExport from "@/interfaces/IBitwardenExport";
+import ITwoFAuthExport from "@/interfaces/ITwoFAuthExport";
+
+const TAG = "Aegis import ->"
 
 const testjson = {
     "version": 1,
@@ -64,12 +69,13 @@ const testjson = {
 }
 
 const teststring = JSON.stringify(testjson);
+const tfa = new GenericJson(teststring, FormatNames.AEGIS)
 
-test("", () => {
-
-    const tfa = new GenericJson(teststring, FormatNames.AEGIS)
+test(`${TAG} Parse length`, () => {
     expect(tfa.entries.length).toBe(3);
-    
+})
+
+test(`${TAG} Parse TOTP`, () => {
     const obj = tfa.entries[0];
     expect(obj.type).toBe("totp");
     expect(obj.name).toBe("MEGA - MEGA:test@test.com");
@@ -78,26 +84,135 @@ test("", () => {
     expect(obj.digits).toBe(6);
     expect(obj.algo).toBe("SHA1");
     expect(obj.period).toBe(30);
-    
-    const obj2 = tfa.entries[1];
-    expect(obj2.type).toBe("steam");
-    expect(obj2.name).toBe("steam");
-    expect(obj2.issuer).toBe("");
-    expect(obj2.secret).toBe("def345");
-    expect(obj2.digits).toBe(5);
-    expect(obj2.algo).toBe("SHA1");
-    expect(obj2.period).toBe(30);
-    
-    const obj3 = tfa.entries[2];
-    expect(obj3.type).toBe("totp");
-    expect(obj3.name).toBe("myGov");
-    expect(obj3.issuer).toBe("");
-    expect(obj3.secret).toBe("efg456");
-    expect(obj3.digits).toBe(6);
-    expect(obj3.algo).toBe("SHA512");
-    expect(obj3.period).toBe(30);
+})
 
-    const result = `{"db":{"entries":[{"type":"totp","name":"MEGA - MEGA:test@test.com","issuer":"MEGA","info":{"secret":"abc123","digits":6,"algo":"SHA1","period":30}},{"type":"steam","name":"steam","issuer":"","info":{"secret":"def345","digits":5,"algo":"SHA1","period":30}},{"type":"totp","name":"myGov","issuer":"","info":{"secret":"efg456","digits":6,"algo":"SHA512","period":30}}]}}`;
+test(`${TAG} Parse Steam`, () => {
+    const obj = tfa.entries[1];
+    expect(obj.type).toBe("steam");
+    expect(obj.name).toBe("steam");
+    expect(obj.issuer).toBe("");
+    expect(obj.secret).toBe("def345");
+    expect(obj.digits).toBe(5);
+    expect(obj.algo).toBe("SHA1");
+    expect(obj.period).toBe(30);
+})
+
+test(`${TAG} Parse SHA512`, () => {
+    const obj = tfa.entries[2];
+    expect(obj.type).toBe("totp");
+    expect(obj.name).toBe("myGov");
+    expect(obj.issuer).toBe("");
+    expect(obj.secret).toBe("efg456");
+    expect(obj.digits).toBe(6);
+    expect(obj.algo).toBe("SHA512");
+    expect(obj.period).toBe(30);
+})
+
+test(`${TAG} Aegis export`, () => {
+    const json: IAegisExport = {
+        "db": {
+            "entries": [
+                {
+                    "type":"totp",
+                    "name":"MEGA - MEGA:test@test.com",
+                    "issuer":"MEGA",
+                    "info":{
+                        "secret":"abc123",
+                        "digits":6,
+                        "algo":"SHA1",
+                        "period":30
+                    }
+                },
+                {
+                    "type":"steam",
+                    "name":"steam",
+                    "issuer":"",
+                    "info":{
+                        "secret":"def345",
+                        "digits":5,
+                        "algo":"SHA1",
+                        "period":30
+                    }
+                },
+                {
+                    "type":"totp",
+                    "name":"myGov",
+                    "issuer":"",
+                    "info":{
+                        "secret":"efg456",
+                        "digits":6,
+                        "algo":"SHA512",
+                        "period":30
+                    }
+                }
+            ]
+        }
+    }
+    const result = JSON.stringify(json)
     expect(tfa.export(FormatNames.AEGIS)).toBe(result);
+})
 
+test(`${TAG} Bitwarden export`, () => {
+    const json: IBitwardenExport = {
+        "items":[
+            {
+                "type":1,
+                "name":"MEGA",
+                "login":{
+                    "totp":"otpauth://totp/abc123"
+                }
+            },
+            {
+                "type":1,
+                "name":"",
+                "login":{
+                    "totp":"otpauth://totp/efg456"
+                }
+            }
+        ]
+    }
+    const result = JSON.stringify(json);
+    expect(tfa.export(FormatNames.BITWARDEN)).toBe(result);
+})
+
+test(`${TAG} 2FAuth export`, () => {
+    const json: ITwoFAuthExport = {
+        "data":[
+            {
+                "otp_type":"totp",
+                "account":"MEGA - MEGA:test@test.com",
+                "service":"MEGA",
+                "secret":"abc123",
+                "digits":6,
+                "algorithm":"SHA1",
+                "period":30,
+                "counter":null,
+                "legacy_uri":"otpauth://totp/MEGA%3AMEGA%20-%20MEGA%3Atest%40test.com?issuer=MEGA&secret=abc123"
+            },
+            {
+                "otp_type":"steam",
+                "account":"steam",
+                "service":"",
+                "secret":"def345",
+                "digits":5,
+                "algorithm":"SHA1",
+                "period":30,
+                "counter":null,
+                "legacy_uri":"otpauth://totp/steam?issuer=&secret=def345"
+            },
+            {
+                "otp_type":"totp",
+                "account":"myGov",
+                "service":"",
+                "secret":"efg456",
+                "digits":6,
+                "algorithm":"SHA512",
+                "period":30,
+                "counter":null,
+                "legacy_uri":"otpauth://totp/myGov?issuer=&secret=efg456"
+            }
+        ]
+    }
+    const result = JSON.stringify(json);
+    expect(tfa.export(FormatNames.TWOFAUTH)).toBe(result);
 })
