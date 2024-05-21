@@ -22,6 +22,16 @@ export default class GenericJson{
         }
     }
 
+    substringAfterLast(str: string, char: string){
+        const index = str.lastIndexOf(char);
+        return str.substring(index+1);
+    }
+
+    substringAfterFirst(str: string, char: string){
+        const index = str.indexOf(char);
+        return str.substring(index+1);
+    }
+
     parseAegis(str: string){
         const json = JSON.parse(str) as IAegisJson;
         return json.db.entries.map<GenericJsonEntry>(data => {
@@ -45,8 +55,7 @@ export default class GenericJson{
                 console.error("TOTP cannot be null");
                 return;
             }
-            const index = totp.lastIndexOf('/');
-            const secret = totp.substring(index+1);
+            const secret = this.substringAfterLast(totp, '/');
 
             const websites = login.uris.map(u => u.uri)
 
