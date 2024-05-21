@@ -132,24 +132,30 @@ export default class GenericJson{
             throw new Error("Encrypted JSON not supported");
         }
         const keys = Object.keys(json.vaults);
-        return keys.flatMap(key => json.vaults[key].items)
+        const items = Array<GenericJsonEntry>();
+        keys.flatMap(key => json.vaults[key].items)
             .flatMap(items => items.data)
-            .map<GenericJsonEntry>(data => {
+            .forEach(data => {
                 //TODO: add check for "login" as data.type
                 const totp = data.content.totpUri
                 const { secret, digits, algo, period, issuer } = this.parseOtpAuthUri(totp);
                 const issuerArg = issuer.length > 0 ? issuer : data.metadata.name
-                return new GenericJsonEntry({
-                    type: "totp",
-                    name: data.content.username,
-                    issuer: issuerArg,
-                    secret,
-                    digits,
-                    algo,
-                    period,
-                    websites: data.content.urls
-                })
+                try{
+                    items.push(new GenericJsonEntry({
+                        type: "totp",
+                        name: data.content.username,
+                        issuer: issuerArg,
+                        secret,
+                        digits,
+                        algo,
+                        period,
+                        websites: data.content.urls
+                    }))
+                }catch(error){
+                    console.error(error);
+                }
             });
+        return items;
     }
 
     export(format: string): string{
