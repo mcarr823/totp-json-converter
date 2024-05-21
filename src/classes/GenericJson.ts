@@ -1,6 +1,6 @@
 import { FormatNames } from "@/enums/FormatNames";
 import IAegisExport, { IAegisExportEntry } from "@/interfaces/IAegisExport";
-import IBitwardenExport, { IBitwardenExportItem } from "@/interfaces/IBitwardenExport";
+import IBitwardenExport, { IBitwardenExportItem, IBitwardenExportItemLoginUri } from "@/interfaces/IBitwardenExport";
 import ITwoFAuthExport, { ITwoFAuthExportItem } from "@/interfaces/ITwoFAuthExport";
 import IAegisJson from "@/interfaces/IAegisJson";
 import IBitwardenJson from "@/interfaces/IBitwardenJson";
@@ -27,7 +27,7 @@ export default class GenericJson{
         return json.db.entries.map<GenericJsonEntry>(data => {
             const { type, name, issuer, info } = data;
             const {secret, algo, digits, period } = info;
-            return { type, name, issuer, secret, algo, digits, period }
+            return { type, name, issuer, secret, algo, digits, period, websites:[] }
         });
     }
 
@@ -48,6 +48,8 @@ export default class GenericJson{
             const index = totp.lastIndexOf('/');
             const secret = totp.substring(index+1);
 
+            const websites = login.uris.map(u => u.uri)
+
             items.push({
                 type: "totp",
                 name: '', // TODO username?
@@ -56,6 +58,7 @@ export default class GenericJson{
                 digits: 6,
                 algo: "sha1",
                 period: 30,
+                websites
             })
         });
         return items
@@ -71,7 +74,8 @@ export default class GenericJson{
                 secret: data.secret,
                 digits: data.digits,
                 algo: data.algorithm,
-                period: data.period
+                period: data.period,
+                websites: []
             }
         });
     }
@@ -118,7 +122,15 @@ export default class GenericJson{
                 return
             }
             const type = BitwardenType.LOGIN;
-            const login = { totp:`otpauth://totp/${secret}` };
+            const login = {
+                totp:`otpauth://totp/${secret}`,
+                uris:data.websites.map<IBitwardenExportItemLoginUri>(uri => {
+                    return {
+                        match:null,
+                        uri:uri
+                    };
+                })
+            };
             items.push({ type, name:issuer, login })
         })
         const json: IBitwardenExport = {
@@ -164,7 +176,7 @@ export default class GenericJson{
 
 }
 
-class GenericJsonEntry{
+interface GenericJsonEntry{
 
     "type": string; // "totp", "steam"
     "name": string; // service name
@@ -173,5 +185,6 @@ class GenericJsonEntry{
     "algo": string; // eg. "SHA1"
     "digits": number; // 6 for totp, 5 for steam,
     "period": number; // usually 30
+    websites: Array<string>;
 
 }

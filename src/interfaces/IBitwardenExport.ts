@@ -9,7 +9,10 @@
  *         "type": 1,
  *         "name": "My Service",
  *         "login": {
- *             "totp": "otpauth://totp/mysecret"
+ *             "totp": "otpauth://totp/mysecret",
+ *             "uris": [
+ *                 "https://my.service.com"
+ *             ]
  *         }
  *     }
  * ]}
@@ -27,4 +30,10 @@ export interface IBitwardenExportItem{
 
 export interface IBitwardenExportItemLogin{
     totp: string;
+    uris: Array<IBitwardenExportItemLoginUri>;
+}
+
+export interface IBitwardenExportItemLoginUri{
+    match: null;
+    uri: string;
 }

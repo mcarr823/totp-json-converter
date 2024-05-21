@@ -75,7 +75,8 @@ test(`${TAG} Bitwarden export`, () => {
                 "type":1,
                 "name":"Facebook",
                 "login":{
-                    "totp":"otpauth://totp/A4GRFTVVRBGY7UIW"
+                    "totp":"otpauth://totp/A4GRFTVVRBGY7UIW",
+                    "uris":[]
                 }
             }
         ]

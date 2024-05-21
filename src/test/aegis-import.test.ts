@@ -159,14 +159,16 @@ test(`${TAG} Bitwarden export`, () => {
                 "type":1,
                 "name":"MEGA",
                 "login":{
-                    "totp":"otpauth://totp/abc123"
+                    "totp":"otpauth://totp/abc123",
+                    "uris":[]
                 }
             },
             {
                 "type":1,
                 "name":"",
                 "login":{
-                    "totp":"otpauth://totp/efg456"
+                    "totp":"otpauth://totp/efg456",
+                    "uris":[]
                 }
             }
         ]

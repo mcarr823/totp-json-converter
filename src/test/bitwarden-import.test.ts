@@ -12,7 +12,11 @@ const testjson = {
     "type": 1,
     "name": "Login Item's Name",
     "login": {
-      "totp": "otpauth://totp/mysecret"
+      "totp": "otpauth://totp/mysecret",
+      "uris":[{
+        "match":null,
+        "uri":"https://my.domain.com"
+      }]
     }
   },
   {
@@ -75,7 +79,13 @@ test(`${TAG} Bitwarden export`, () => {
         "type":1,
         "name":"Login Item's Name",
         "login":{
-          "totp":"otpauth://totp/mysecret"
+          "totp":"otpauth://totp/mysecret",
+          "uris":[
+            {
+              match:null,
+              uri:"https://my.domain.com"
+            }
+          ]
         }
       }
     ]
