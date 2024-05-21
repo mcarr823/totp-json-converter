@@ -5,7 +5,7 @@ import ITwoFAuthExport, { ITwoFAuthExportItem } from "@/interfaces/ITwoFAuthExpo
 import IAegisJson from "@/interfaces/IAegisJson";
 import IBitwardenJson from "@/interfaces/IBitwardenJson";
 import { BitwardenType } from "@/enums/BitwardenType";
-import { IGenericJsonTotpArgs } from "@/interfaces/IGenericJsonEntry";
+import { IGenericJsonEntry, IGenericJsonTotpArgs } from "@/interfaces/IGenericJsonEntry";
 
 export default class GenericJson{
 
@@ -18,6 +18,8 @@ export default class GenericJson{
             this.entries = this.parseBitwarden(str);
         }else if (format === FormatNames.TWOFAUTH){
             this.entries = this.parseTwoFAuth(str);
+        }else if (format === FormatNames.PROTON){
+            this.entries = this.parseProton(str);
         }else{
             throw new Error("Import failed");
         }
@@ -122,6 +124,32 @@ export default class GenericJson{
                 websites: []
             })
         });
+    }
+
+    parseProton(str: string){
+        const json = JSON.parse(str) as IProtonJson;
+        if (json.encrypted){
+            throw new Error("Encrypted JSON not supported");
+        }
+        const keys = Object.keys(json.vaults);
+        return keys.flatMap(key => json.vaults[key].items)
+            .flatMap(items => items.data)
+            .map<GenericJsonEntry>(data => {
+                //TODO: add check for "login" as data.type
+                const totp = data.content.totpUri
+                const { secret, digits, algo, period, issuer } = this.parseOtpAuthUri(totp);
+                const issuerArg = issuer.length > 0 ? issuer : data.metadata.name
+                return new GenericJsonEntry({
+                    type: "totp",
+                    name: data.content.username,
+                    issuer: issuerArg,
+                    secret,
+                    digits,
+                    algo,
+                    period,
+                    websites: data.content.urls
+                })
+            });
     }
 
     export(format: string): string{
