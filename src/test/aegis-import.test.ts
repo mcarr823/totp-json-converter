@@ -159,7 +159,7 @@ test(`${TAG} Bitwarden export`, () => {
                 "type":1,
                 "name":"MEGA",
                 "login":{
-                    "totp":"otpauth://totp/abc123",
+                    "totp":"otpauth://totp/MEGA%3AMEGA%20-%20MEGA%3Atest%40test.com?secret=abc123&algorithm=SHA1&digits=6&period=30&issuer=MEGA",
                     "uris":[]
                 }
             },
@@ -167,7 +167,7 @@ test(`${TAG} Bitwarden export`, () => {
                 "type":1,
                 "name":"",
                 "login":{
-                    "totp":"otpauth://totp/efg456",
+                    "totp":"otpauth://totp/myGov?secret=efg456&algorithm=SHA512&digits=6&period=30",
                     "uris":[]
                 }
             }
@@ -189,7 +189,7 @@ test(`${TAG} 2FAuth export`, () => {
                 "algorithm":"SHA1",
                 "period":30,
                 "counter":null,
-                "legacy_uri":"otpauth://totp/MEGA%3AMEGA%20-%20MEGA%3Atest%40test.com?issuer=MEGA&secret=abc123"
+                "legacy_uri":"otpauth://totp/MEGA%3AMEGA%20-%20MEGA%3Atest%40test.com?secret=abc123&algorithm=SHA1&digits=6&period=30&issuer=MEGA"
             },
             {
                 "otp_type":"steam",
@@ -200,7 +200,7 @@ test(`${TAG} 2FAuth export`, () => {
                 "algorithm":"SHA1",
                 "period":30,
                 "counter":null,
-                "legacy_uri":"otpauth://totp/steam?issuer=&secret=def345"
+                "legacy_uri":"otpauth://totp/steam?secret=def345&algorithm=SHA1&digits=5&period=30"
             },
             {
                 "otp_type":"totp",
@@ -211,7 +211,7 @@ test(`${TAG} 2FAuth export`, () => {
                 "algorithm":"SHA512",
                 "period":30,
                 "counter":null,
-                "legacy_uri":"otpauth://totp/myGov?issuer=&secret=efg456"
+                "legacy_uri":"otpauth://totp/myGov?secret=efg456&algorithm=SHA512&digits=6&period=30"
             }
         ]
     }

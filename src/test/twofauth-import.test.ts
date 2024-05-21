@@ -75,7 +75,7 @@ test(`${TAG} Bitwarden export`, () => {
                 "type":1,
                 "name":"Facebook",
                 "login":{
-                    "totp":"otpauth://totp/A4GRFTVVRBGY7UIW",
+                    "totp":"otpauth://totp/Facebook%3Ajohndoe%40facebook.com?secret=A4GRFTVVRBGY7UIW&algorithm=sha1&digits=6&period=30&issuer=Facebook",
                     "uris":[]
                 }
             }
@@ -97,7 +97,7 @@ test(`${TAG} 2FAuth export`, () => {
                 "algorithm":"sha1",
                 "period":30,
                 "counter":null,
-                "legacy_uri":"otpauth://totp/Facebook%3Ajohndoe%40facebook.com?issuer=Facebook&secret=A4GRFTVVRBGY7UIW"
+                "legacy_uri":"otpauth://totp/Facebook%3Ajohndoe%40facebook.com?secret=A4GRFTVVRBGY7UIW&algorithm=sha1&digits=6&period=30&issuer=Facebook"
             }
         ]
     };

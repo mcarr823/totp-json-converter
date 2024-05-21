@@ -27,7 +27,7 @@ export default class GenericJson{
         return json.db.entries.map<GenericJsonEntry>(data => {
             const { type, name, issuer, info } = data;
             const {secret, algo, digits, period } = info;
-            return { type, name, issuer, secret, algo, digits, period, websites:[] }
+            return new GenericJsonEntry({ type, name, issuer, secret, algo, digits, period, websites:[] })
         });
     }
 
@@ -50,7 +50,7 @@ export default class GenericJson{
 
             const websites = login.uris.map(u => u.uri)
 
-            items.push({
+            items.push(new GenericJsonEntry({
                 type: "totp",
                 name: '', // TODO username?
                 issuer: name,
@@ -59,7 +59,7 @@ export default class GenericJson{
                 algo: "sha1",
                 period: 30,
                 websites
-            })
+            }))
         });
         return items
     }
@@ -67,7 +67,7 @@ export default class GenericJson{
     parseTwoFAuth(str: string){
         const json = JSON.parse(str) as ITwoFAuthExport;
         return json.data.map<GenericJsonEntry>(data => {
-            return {
+            return new GenericJsonEntry({
                 type: data.otp_type,
                 name: data.account,
                 issuer: data.service,
@@ -76,7 +76,7 @@ export default class GenericJson{
                 algo: data.algorithm,
                 period: data.period,
                 websites: []
-            }
+            })
         });
     }
 
@@ -116,14 +116,13 @@ export default class GenericJson{
     exportBitwarden(): string{
         const items = Array<IBitwardenExportItem>()
         this.entries.forEach(data => {
-            const { issuer, secret } = data;
             if (data.type !== 'totp'){
                 console.error("Bitwarden does not support this type of token");
                 return
             }
             const type = BitwardenType.LOGIN;
             const login = {
-                totp:`otpauth://totp/${secret}`,
+                totp:data.buildOtpAuthUri(),
                 uris:data.websites.map<IBitwardenExportItemLoginUri>(uri => {
                     return {
                         match:null,
@@ -131,7 +130,7 @@ export default class GenericJson{
                     };
                 })
             };
-            items.push({ type, name:issuer, login })
+            items.push({ type, name:data.issuer, login })
         })
         const json: IBitwardenExport = {
             items
@@ -144,19 +143,6 @@ export default class GenericJson{
             data: this.entries.map<ITwoFAuthExportItem>(data => {
 
                 const { secret, digits, period } = data;
-                
-                const name = [];
-                const encodedIssuer = encodeURIComponent(data.issuer);
-                if (data.issuer.length > 0) name.push(encodedIssuer);
-                if (data.name.length > 0) name.push(encodeURIComponent(data.name));
-
-                var legacy_uri = 'otpauth://totp/';
-                if (name.length > 0){
-                    // %3A = ":" encoded
-                    legacy_uri += name.join('%3A')+`?issuer=${encodedIssuer}&secret=${data.secret}`;
-                }else{
-                    legacy_uri += data.secret;
-                }
 
                 return {
                     otp_type: data.type,
@@ -167,7 +153,7 @@ export default class GenericJson{
                     algorithm: data.algo,
                     period,
                     counter: null,
-                    legacy_uri
+                    legacy_uri:data.buildOtpAuthUri()
                 }
             })
         }
@@ -176,15 +162,84 @@ export default class GenericJson{
 
 }
 
-interface GenericJsonEntry{
+class GenericJsonEntry implements IGenericJsonEntry{
 
-    "type": string; // "totp", "steam"
-    "name": string; // service name
-    "issuer": string;
-    "secret": string;
-    "algo": string; // eg. "SHA1"
-    "digits": number; // 6 for totp, 5 for steam,
-    "period": number; // usually 30
+    type: string; // "totp", "steam"
+    name: string; // service name
+    issuer: string;
+    secret: string;
+    algo: string; // eg. "SHA1"
+    digits: number; // 6 for totp, 5 for steam,
+    period: number; // usually 30
     websites: Array<string>;
+
+    constructor(args: IGenericJsonEntry){
+        const { type, name, issuer, secret, algo, digits, period, websites } = args;
+
+        // Name or issuer is required.
+        // Otherwise we can't identify which service the token belongs to.
+        if (name.length === 0 && issuer.length === 0){
+            throw new Error("Name and issuer cannot both be empty");
+        }
+
+        // If there's no secret, then it's not a TOTP 2FA token
+        if (secret.length === 0){
+            throw new Error("No secret provided");
+        }
+
+        if (algo.length === 0 || digits <= 0 || period <= 0){
+            throw new Error("Invalid token");
+        }
+
+        this.type = type;
+        this.name = name;
+        this.issuer = issuer;
+        this.secret = secret;
+        this.algo = algo;
+        this.digits = digits;
+        this.period = period;
+        this.websites = websites;
+
+    }
+
+    buildOtpAuthUri(){
+
+        // In theory this shouldn't happen, since the constructor
+        // checks for this.
+        if (this.issuer.length === 0 && this.name.length === 0){
+            throw new Error("Invalid token - issuer or name must be provided");
+        }else if (this.secret.length === 0){
+            throw new Error("Invalid token - secret must be provided");
+        }else if (this.algo.length === 0 || this.digits <= 0 || this.period <= 0){
+            throw new Error("Invalid token");
+        }
+
+        const params = [
+            `secret=${this.secret}`,
+            `algorithm=${this.algo}`,
+            `digits=${this.digits}`,
+            `period=${this.period}`
+        ];
+        const serviceNameArr = [];
+
+        if (this.issuer.length > 0){
+            const encodedIssuer = encodeURIComponent(this.issuer);
+            serviceNameArr.push(this.issuer);
+            params.push(`issuer=${encodedIssuer}`)
+        }
+
+        if (this.name.length > 0){
+            serviceNameArr.push(this.name);
+        }
+        
+        // eg. Facebook:myaccountname
+        const serviceName = encodeURIComponent(serviceNameArr.join(':'))
+
+        // Query string params, eg. issuer=test&period=30&digits=6
+        const paramString = params.join("&");
+        
+        return `otpauth://totp/${serviceName}?${paramString}`;
+
+    }
 
 }

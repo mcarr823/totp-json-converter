@@ -79,7 +79,7 @@ test(`${TAG} Bitwarden export`, () => {
         "type":1,
         "name":"Login Item's Name",
         "login":{
-          "totp":"otpauth://totp/mysecret",
+          "totp":"otpauth://totp/Login%20Item's%20Name?secret=mysecret&algorithm=sha1&digits=6&period=30&issuer=Login%20Item's%20Name",
           "uris":[
             {
               match:null,
@@ -106,7 +106,7 @@ test(`${TAG} 2FAuth export`, () => {
         "algorithm":"sha1",
         "period":30,
         "counter":null,
-        "legacy_uri":"otpauth://totp/Login%20Item's%20Name?issuer=Login%20Item's%20Name&secret=mysecret"
+        "legacy_uri":"otpauth://totp/Login%20Item's%20Name?secret=mysecret&algorithm=sha1&digits=6&period=30&issuer=Login%20Item's%20Name"
       }
     ]
   }
