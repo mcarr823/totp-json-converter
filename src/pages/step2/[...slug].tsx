@@ -25,6 +25,7 @@ export default function Home() {
         <ListItem text="Bitwarden" href={getPath(FormatNames.BITWARDEN)}/>
         <ListItem text="2FAuth" href={getPath(FormatNames.TWOFAUTH)}/>
         <ListItem text="Aegis" href={getPath(FormatNames.AEGIS)}/>
+        <ListItem text="Proton" href={getPath(FormatNames.BITWARDEN)} subtext="This option actually exports to Bitwarden format, which Proton Pass is able to import"/>
       </div>
 
     </Wrapper>

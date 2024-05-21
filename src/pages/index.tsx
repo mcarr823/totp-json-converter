@@ -17,6 +17,7 @@ export default function Home() {
         <ListItem text="Bitwarden" href={getPath(FormatNames.BITWARDEN)}/>
         <ListItem text="2FAuth" href={getPath(FormatNames.TWOFAUTH)}/>
         <ListItem text="Aegis" href={getPath(FormatNames.AEGIS)}/>
+        <ListItem text="Proton" href={getPath(FormatNames.PROTON)}/>
       </div>
 
     </Wrapper>
