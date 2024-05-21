@@ -1,5 +1,8 @@
 import GenericJson from "@/classes/GenericJson";
 import { FormatNames } from "@/enums/FormatNames";
+import IAegisExport from "@/interfaces/IAegisExport";
+import IBitwardenExport from "@/interfaces/IBitwardenExport";
+import ITwoFAuthExport from "@/interfaces/ITwoFAuthExport";
 
 
 const TAG = "Proton import ->"
@@ -120,7 +123,8 @@ const testjson = {
                             "password": "",
                             "urls":
                             [
-                                "https://account.proton.me/login"
+                                "https://account.proton.me/login",
+                                "https://account.proton.me"
                             ],
                             "totpUri": "otpauth://totp/Proton:proton%40my.domain.com?issuer=Proton&secret=abc123&algorithm=SHA1&digits=6&period=30",
                             "passkeys":
@@ -156,4 +160,66 @@ test(`${TAG} Parse TOTP`, () => {
     expect(obj.digits).toBe(6);
     expect(obj.algo).toBe("SHA1");
     expect(obj.period).toBe(30);
+})
+
+test(`${TAG} Aegis export`, () => {
+    const json: IAegisExport = {
+        "db":{
+            "entries":[
+                {
+                    "type":"totp",
+                    "name":"me@my.domain.com",
+                    "issuer":"Proton",
+                    "info":{
+                        "secret":"abc123",
+                        "digits":6,
+                        "algo":"SHA1",
+                        "period":30
+                    }
+                }
+            ]
+        }
+    };
+    const result = JSON.stringify(json);
+    expect(tfa.export(FormatNames.AEGIS)).toBe(result);
+})
+
+test(`${TAG} Bitwarden export`, () => {
+    const json: IBitwardenExport = {
+        "items":[
+            {
+                "type":1,
+                "name":"Proton",
+                "login":{
+                    "totp":"otpauth://totp/Proton%3Ame%40my.domain.com?secret=abc123&algorithm=SHA1&digits=6&period=30&issuer=Proton",
+                    "uris":[
+                        {match:null, uri:"https://account.proton.me/login"},
+                        {match:null, uri:"https://account.proton.me"}
+                    ]
+                }
+            }
+        ]
+    }
+    const result = JSON.stringify(json);
+    expect(tfa.export(FormatNames.BITWARDEN)).toBe(result);
+})
+
+test(`${TAG} 2FAuth export`, () => {
+    const json: ITwoFAuthExport = {
+        "data":[
+            {
+                "otp_type":"totp",
+                "account":"me@my.domain.com",
+                "service":"Proton",
+                "secret":"abc123",
+                "digits":6,
+                "algorithm":"SHA1",
+                "period":30,
+                "counter":null,
+                "legacy_uri":"otpauth://totp/Proton%3Ame%40my.domain.com?secret=abc123&algorithm=SHA1&digits=6&period=30&issuer=Proton"
+            }
+        ]
+    };
+    const result = JSON.stringify(json);
+    expect(tfa.export(FormatNames.TWOFAUTH)).toBe(result);
 })
