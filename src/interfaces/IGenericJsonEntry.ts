@@ -12,6 +12,7 @@ export interface IGenericJsonEntry{
 }
 
 export interface IGenericJsonTotpArgs{
+    name: string;
     issuer: string;
     secret: string;
     algo: string; // eg. "SHA1"

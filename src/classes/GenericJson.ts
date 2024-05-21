@@ -6,6 +6,7 @@ import IAegisJson from "@/interfaces/IAegisJson";
 import IBitwardenJson from "@/interfaces/IBitwardenJson";
 import { BitwardenType } from "@/enums/BitwardenType";
 import { IGenericJsonEntry, IGenericJsonTotpArgs } from "@/interfaces/IGenericJsonEntry";
+import ITwoFAuthJson from "@/interfaces/ITwoFAuthJson";
 
 export default class GenericJson{
 
@@ -37,28 +38,43 @@ export default class GenericJson{
 
     parseOtpAuthUri(uri: string) : IGenericJsonTotpArgs{
 
+        const totpPrefix = "otpauth://totp/"
+
         const digits = 6;
         const period = 30;
         const algo = "sha1";
-        const issuer = '';
+        var name = '';
+        var issuer = '';
 
-        if (typeof uri === 'undefined' || uri.length === 0){
+        if (typeof uri === 'undefined' || uri.length <= totpPrefix.length){
             const secret = '';
-            return { secret, digits, period, algo, issuer }
+            return { secret, digits, period, algo, issuer, name }
         }
+
+        const urlWithoutPrefix = uri.substring(totpPrefix.length)
 
         // First, test for otpauth uris without any parameters.
         // eg. otpauth://totp/mysecret
-        const qIndex = uri.indexOf('?')
+        const qIndex = urlWithoutPrefix.indexOf('?')
         if (qIndex === -1){
-            const secret = this.substringAfterLast(uri, '/')
-            return { secret, digits, period, algo, issuer }
+            const secret = this.substringAfterLast(urlWithoutPrefix, '/')
+            return { secret, digits, period, algo, issuer, name }
+        }
+
+        const nameAndIssuer = urlWithoutPrefix.substring(0, qIndex);
+        const decodedNameAndIssuer = decodeURIComponent(nameAndIssuer);
+        const cIndex = decodedNameAndIssuer.indexOf(':')
+        if (cIndex !== -1){
+            issuer = decodedNameAndIssuer.substring(0, cIndex)
+            name = decodedNameAndIssuer.substring(cIndex+1)
+        }else{
+            issuer = decodedNameAndIssuer
         }
 
         // If the uri DOES have parameters, parse them as a
         // URLSearchParams object.
         // eg. otpauth://totp/Facebook:myusername?issuer=Facebook&secret=abc
-        const querystring = this.substringAfterFirst(uri, '?');
+        const querystring = this.substringAfterFirst(urlWithoutPrefix, '?');
         const params = new URLSearchParams(querystring);
         const digitParam = params.get('digits');
         const periodParam = params.get('period');
@@ -67,7 +83,8 @@ export default class GenericJson{
             digits: digitParam !== null ? parseInt(digitParam) : digits,
             period: periodParam !== null ? parseInt(periodParam) : period,
             algo: params.get('algorithm') ?? algo,
-            issuer: params.get('issuer') ?? issuer
+            issuer: params.get('issuer') ?? issuer,
+            name
         }
 
     }
@@ -85,7 +102,7 @@ export default class GenericJson{
         const json = JSON.parse(str) as IBitwardenJson;
         const items = Array<GenericJsonEntry>();
         json.items.forEach(data => {
-            const { name, login } = data;
+            const { login } = data;
             if (typeof login === 'undefined'){
                 console.error("No login node - Not a valid 2FA token");
                 return;
@@ -96,8 +113,19 @@ export default class GenericJson{
                 return;
             }
             
-            const { secret, digits, algo, period, issuer } = this.parseOtpAuthUri(totp);
-            const [issuerArg, nameArg] = issuer.length > 0 ? [issuer, name] : [name, ''] // TODO username?
+            const { secret, digits, algo, period, issuer, name } = this.parseOtpAuthUri(totp);
+            var issuerArg, nameArg;
+            if (issuer.length > 0 && name.length > 0){
+                issuerArg = issuer;
+                nameArg = name;
+            }else if (issuer.length > 0){
+                issuerArg = issuer;
+                nameArg = data.name;
+            }else{
+                issuerArg = data.name;
+                nameArg = '';
+            }
+            // TODO parse username?
 
             const websites = login.uris.map(u => u.uri)
 
@@ -116,19 +144,40 @@ export default class GenericJson{
     }
 
     parseTwoFAuth(str: string){
-        const json = JSON.parse(str) as ITwoFAuthExport;
-        return json.data.map<GenericJsonEntry>(data => {
-            return new GenericJsonEntry({
-                type: data.otp_type,
-                name: data.account,
-                issuer: data.service,
-                secret: data.secret,
-                digits: data.digits,
-                algo: data.algorithm,
-                period: data.period,
-                websites: []
-            })
+        const json = JSON.parse(str) as ITwoFAuthJson;
+        const items = Array<GenericJsonEntry>();
+        json.data.forEach(data => {
+            const { issuer, name } = this.parseOtpAuthUri(data.legacy_uri);
+            var issuerArg, nameArg;
+            if (issuer.length > 0 && name.length > 0){
+                issuerArg = issuer;
+                nameArg = name;
+            }else if (issuer.length > 0){
+                issuerArg = issuer;
+                nameArg = data.account;
+            }else if (data.service !== null){
+                issuerArg = data.service;
+                nameArg = data.account;
+            }else{
+                issuerArg = data.account;
+                nameArg = '';
+            }
+            try{
+                items.push(new GenericJsonEntry({
+                    type: data.otp_type,
+                    name: nameArg,
+                    issuer: issuerArg,
+                    secret: data.secret,
+                    digits: data.digits,
+                    algo: data.algorithm,
+                    period: data.period,
+                    websites: []
+                }))
+            }catch(error){
+                console.log(error);
+            }
         });
+        return items
     }
 
     parseProton(str: string){
