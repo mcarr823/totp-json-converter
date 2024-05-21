@@ -5,6 +5,7 @@ import ITwoFAuthExport, { ITwoFAuthExportItem } from "@/interfaces/ITwoFAuthExpo
 import IAegisJson from "@/interfaces/IAegisJson";
 import IBitwardenJson from "@/interfaces/IBitwardenJson";
 import { BitwardenType } from "@/enums/BitwardenType";
+import { IGenericJsonTotpArgs } from "@/interfaces/IGenericJsonEntry";
 
 export default class GenericJson{
 
@@ -30,6 +31,38 @@ export default class GenericJson{
     substringAfterFirst(str: string, char: string){
         const index = str.indexOf(char);
         return str.substring(index+1);
+    }
+
+    parseOtpAuthUri(uri: string) : IGenericJsonTotpArgs{
+
+        const digits = 6;
+        const period = 30;
+        const algo = "sha1";
+        const issuer = '';
+
+        // First, test for otpauth uris without any parameters.
+        // eg. otpauth://totp/mysecret
+        const qIndex = uri.indexOf('?')
+        if (qIndex === -1){
+            const secret = this.substringAfterLast(uri, '/')
+            return { secret, digits, period, algo, issuer }
+        }
+
+        // If the uri DOES have parameters, parse them as a
+        // URLSearchParams object.
+        // eg. otpauth://totp/Facebook:myusername?issuer=Facebook&secret=abc
+        const querystring = this.substringAfterFirst(uri, '?');
+        const params = new URLSearchParams(querystring);
+        const digitParam = params.get('digits');
+        const periodParam = params.get('period');
+        return {
+            secret: params.get('secret') ?? '',
+            digits: digitParam !== null ? parseInt(digitParam) : digits,
+            period: periodParam !== null ? parseInt(periodParam) : period,
+            algo: params.get('algorithm') ?? algo,
+            issuer: params.get('issuer') ?? issuer
+        }
+
     }
 
     parseAegis(str: string){
