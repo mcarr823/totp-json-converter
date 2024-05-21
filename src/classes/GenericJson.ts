@@ -88,18 +88,20 @@ export default class GenericJson{
                 console.error("TOTP cannot be null");
                 return;
             }
-            const secret = this.substringAfterLast(totp, '/');
+            
+            const { secret, digits, algo, period, issuer } = this.parseOtpAuthUri(totp);
+            const [issuerArg, nameArg] = issuer.length > 0 ? [issuer, name] : [name, ''] // TODO username?
 
             const websites = login.uris.map(u => u.uri)
 
             items.push(new GenericJsonEntry({
                 type: "totp",
-                name: '', // TODO username?
-                issuer: name,
+                name: nameArg,
+                issuer: issuerArg,
                 secret,
-                digits: 6,
-                algo: "sha1",
-                period: 30,
+                digits,
+                algo,
+                period,
                 websites
             }))
         });
@@ -204,7 +206,7 @@ export default class GenericJson{
 
 }
 
-class GenericJsonEntry implements IGenericJsonEntry{
+class GenericJsonEntry{
 
     type: string; // "totp", "steam"
     name: string; // service name

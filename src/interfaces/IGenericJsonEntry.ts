@@ -1,4 +1,4 @@
-interface IGenericJsonEntry{
+export interface IGenericJsonEntry{
 
     type: string; // "totp", "steam"
     name: string; // service name

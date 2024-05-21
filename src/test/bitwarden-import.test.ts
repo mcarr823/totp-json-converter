@@ -33,7 +33,18 @@ const testjson = {
     "type": 4,
     "name": "Identity Item's Name",
     "identity": {}                     
+  },
+  {
+  "type": 1,
+  "name": "MyUsername",
+  "login": {
+    "totp": "otpauth://totp/MyUsername?issuer=Facebook&secret=abc123",
+    "uris":[{
+      "match":null,
+      "uri":"https://my.domain.com"
+    }]
   }
+},
   ]
 };
 
@@ -41,13 +52,20 @@ const teststring = JSON.stringify(testjson);
 const bw = new GenericJson(teststring, FormatNames.BITWARDEN);
 
 test(`${TAG} Parse length`, () => {
-  // Only 1 of the 4 items is actually a 2FA token (type === 1)
-  expect(bw.entries.length).toBe(1);
+  // Only 2 of the 5 items are actually 2FA tokens (type === 1)
+  expect(bw.entries.length).toBe(2);
 })
 
 test(`${TAG} Parse TOTP`, () => {
   const token = bw.entries[0];
   expect(token.secret).toBe("mysecret")
+})
+
+test(`${TAG} Parse TOTP 2`, () => {
+  const token = bw.entries[1];
+  expect(token.secret).toBe("abc123")
+  expect(token.issuer).toBe("Facebook")
+  expect(token.name).toBe("MyUsername")
 })
 
 test(`${TAG} Aegis export`, () => {
@@ -60,6 +78,17 @@ test(`${TAG} Aegis export`, () => {
           "issuer":"Login Item's Name",
           "info":{
             "secret":"mysecret",
+            "digits":6,
+            "algo":"sha1",
+            "period":30
+          }
+        },
+        {
+          "type":"totp",
+          "name":"MyUsername",
+          "issuer":"Facebook",
+          "info":{
+            "secret":"abc123",
             "digits":6,
             "algo":"sha1",
             "period":30
@@ -87,6 +116,19 @@ test(`${TAG} Bitwarden export`, () => {
             }
           ]
         }
+      },
+      {
+        "type":1,
+        "name":"Facebook",
+        "login":{
+          "totp":"otpauth://totp/Facebook%3AMyUsername?secret=abc123&algorithm=sha1&digits=6&period=30&issuer=Facebook",
+          "uris":[
+            {
+              match:null,
+              uri:"https://my.domain.com"
+            }
+          ]
+        }
       }
     ]
   }
@@ -107,7 +149,18 @@ test(`${TAG} 2FAuth export`, () => {
         "period":30,
         "counter":null,
         "legacy_uri":"otpauth://totp/Login%20Item's%20Name?secret=mysecret&algorithm=sha1&digits=6&period=30&issuer=Login%20Item's%20Name"
-      }
+      },
+      {
+        "otp_type":"totp",
+        "account":"MyUsername",
+        "service":"Facebook",
+        "secret":"abc123",
+        "digits":6,
+        "algorithm":"sha1",
+        "period":30,
+        "counter":null,
+        "legacy_uri":"otpauth://totp/Facebook%3AMyUsername?secret=abc123&algorithm=sha1&digits=6&period=30&issuer=Facebook"
+      },
     ]
   }
   const result = JSON.stringify(json)
