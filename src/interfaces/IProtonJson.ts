@@ -1,28 +1,28 @@
 interface IProtonJson {
-    "encrypted": boolean;
-    "vaults": {
+    encrypted: boolean;
+    vaults: {
         [vaultUuid: string]: {
-            "items": Array<ProtonItem>
+            items: Array<ProtonItem>
         }
     }
 }
 
 interface ProtonItem{
-    "data": ProtonData
+    data: ProtonData
 }
 
 interface ProtonData{
-    "metadata": ProtonMetadata,
-    "type": string; // "login"
-    "content": ProtonContent
+    metadata: ProtonMetadata,
+    type: string; // "login"
+    content: ProtonContent
 }
 
 interface ProtonMetadata{
-    "name": string; // issuer
+    name: string; // issuer
 }
 
 interface ProtonContent{
-    "username": string;
-    "urls": Array<string>;
-    "totpUri": string;
+    username: string;
+    urls: Array<string>;
+    totpUri: string;
 }
