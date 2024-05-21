@@ -42,6 +42,11 @@ export default class GenericJson{
         const algo = "sha1";
         const issuer = '';
 
+        if (typeof uri === 'undefined' || uri.length === 0){
+            const secret = '';
+            return { secret, digits, period, algo, issuer }
+        }
+
         // First, test for otpauth uris without any parameters.
         // eg. otpauth://totp/mysecret
         const qIndex = uri.indexOf('?')
@@ -136,7 +141,9 @@ export default class GenericJson{
         keys.flatMap(key => json.vaults[key].items)
             .flatMap(items => items.data)
             .forEach(data => {
-                //TODO: add check for "login" as data.type
+                if (data.type !== 'login'){
+                    return;
+                }
                 const totp = data.content.totpUri
                 const { secret, digits, algo, period, issuer } = this.parseOtpAuthUri(totp);
                 const issuerArg = issuer.length > 0 ? issuer : data.metadata.name
