@@ -22,6 +22,18 @@ For example, several 2FA services support importing data which is stored in the 
 - Only supports 2FA tokens, not passwords, passkeys, etc.
 - Only supports TOTP, not HOTP or others
 
+## Example Website
+
+You can run a statically compiled version of the website deployed via Github Actions and hosted on Github Pages.
+
+https://mcarr823.github.io/totp-json-converter/
+
+The token conversion runs client-side (ie. in your browser) and does not upload your data anywhere. 
+
+If you want to be extra cautious, you can turn off your internet connection for step 3 of the process (the part where you actually enter and convert your tokens).
+
+Or, better yet, follow the Development section below and run the code directly on your own machine.
+
 ## Development
 
 ### Dev Container
