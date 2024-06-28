@@ -1,5 +1,7 @@
 # TOTP JSON Converter
 
+![example workflow](https://github.com/mcarr823/totp-json-converter/actions/workflows/jest.yml/badge.svg)
+
 This program converts JSON files between a few different 2FA providers' formats.
 
 The intended use for this program is to move from one 2FA provider to another by exporting your tokens from one provider and converting them into a different format.
