@@ -1,33 +1,27 @@
 import { IGenericJsonEntry } from "@/interfaces/IGenericJsonEntry";
 import GenericJson from "./GenericJson";
 
-export default class ProtonJson{
+export default function ProtonJson(
+    json: IProtonJson
+){
 
-    items: Array<ProtonJsonItem>;
-
-    constructor(
-        json: IProtonJson
-    ){
-
-        if (json.encrypted)
-            throw new Error("Encrypted JSON not supported");
-        
-        const keys = Object.keys(json.vaults)
-        const items = Array<ProtonJsonItem>()
+    if (json.encrypted)
+        throw new Error("Encrypted JSON not supported");
     
-        keys.flatMap(key => json.vaults[key].items)
-            .flatMap(items => items.data)
-            .filter(data => data.type === 'login')
-            .forEach(item => {
-                try{
-                    items.push(new ProtonJsonItem(item))
-                }catch(e){
-                    console.error(e)
-                }
-            });
-        this.items = items
-    
-    }
+    const keys = Object.keys(json.vaults)
+    const items = Array<ProtonJsonItem>()
+
+    keys.flatMap(key => json.vaults[key].items)
+        .flatMap(items => items.data)
+        .filter(data => data.type === 'login')
+        .forEach(item => {
+            try{
+                items.push(new ProtonJsonItem(item))
+            }catch(e){
+                console.error(e)
+            }
+        });
+    return items
 
 }
 

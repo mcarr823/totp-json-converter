@@ -1,17 +1,11 @@
 import IAegisJson, { IEntry } from "@/interfaces/IAegisJson";
 import { IGenericJsonEntry } from "@/interfaces/IGenericJsonEntry";
 
-export default class AegisJson{
+export default function AegisJson(
+    json: IAegisJson
+){
 
-    items: Array<AegisJsonItem>;
-
-    constructor(
-        json: IAegisJson
-    ){
-
-        this.items = json.db.entries.map(data => new AegisJsonItem(data))
-
-    }
+    return json.db.entries.map(data => new AegisJsonItem(data))
 
 }
 

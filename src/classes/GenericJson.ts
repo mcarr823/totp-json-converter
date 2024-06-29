@@ -5,7 +5,7 @@ import ITwoFAuthExport, { ITwoFAuthExportItem } from "@/interfaces/ITwoFAuthExpo
 import IAegisJson from "@/interfaces/IAegisJson";
 import IBitwardenJson from "@/interfaces/IBitwardenJson";
 import { BitwardenType } from "@/enums/BitwardenType";
-import { IGenericJsonTotpArgs } from "@/interfaces/IGenericJsonEntry";
+import { IGenericJsonEntry, IGenericJsonTotpArgs } from "@/interfaces/IGenericJsonEntry";
 import ITwoFAuthJson from "@/interfaces/ITwoFAuthJson";
 import BitwardenJson from "./BitwardenJson";
 import TwoFAuthJson from "./TwoFAuthJson";
@@ -18,17 +18,23 @@ export default class GenericJson{
     entries: Array<GenericJsonEntry>;
 
     constructor(str: string, format: string){
+        
+        var entries = Array<IGenericJsonEntry>()
+        
         if (format === FormatNames.AEGIS){
-            this.entries = this.parseAegis(str);
+            entries = this.parseAegis(str);
         }else if (format === FormatNames.BITWARDEN){
-            this.entries = this.parseBitwarden(str);
+            entries = this.parseBitwarden(str);
         }else if (format === FormatNames.TWOFAUTH){
-            this.entries = this.parseTwoFAuth(str);
+            entries = this.parseTwoFAuth(str);
         }else if (format === FormatNames.PROTON){
-            this.entries = this.parseProton(str);
+            entries = this.parseProton(str);
         }else{
             throw new Error("Import failed");
         }
+        
+        this.entries = entries.map(e => new GenericJsonEntry(e))
+
     }
 
     static substringAfterLast(str: string, char: string){
@@ -94,67 +100,31 @@ export default class GenericJson{
 
     }
 
-    parseAegis(str: string){
+    parseAegis(str: string): Array<IGenericJsonEntry>{
 
         const json = JSON.parse(str) as IAegisJson;
-        const obj = new AegisJson(json)
-        const arr = Array<GenericJsonEntry>()
-        obj.items.forEach(item => {
-            try{
-                arr.push(new GenericJsonEntry(item))
-            }catch(e){
-                console.error(e)
-            }
-        })
-        return arr
+        return AegisJson(json)
         
     }
 
-    parseBitwarden(str: string): Array<GenericJsonEntry>{
+    parseBitwarden(str: string): Array<IGenericJsonEntry>{
         
         const json = JSON.parse(str) as IBitwardenJson;
-        const obj = new BitwardenJson(json)
-        const arr = Array<GenericJsonEntry>()
-        obj.items.forEach(item => {
-            try{
-                arr.push(new GenericJsonEntry(item))
-            }catch(e){
-                console.error(e)
-            }
-        })
-        return arr
+        return BitwardenJson(json)
 
     }
 
-    parseTwoFAuth(str: string){
+    parseTwoFAuth(str: string): Array<IGenericJsonEntry>{
         
         const json = JSON.parse(str) as ITwoFAuthJson;
-        const obj = new TwoFAuthJson(json)
-        const arr = Array<GenericJsonEntry>()
-        obj.items.forEach(item => {
-            try{
-                arr.push(new GenericJsonEntry(item))
-            }catch(e){
-                console.error(e)
-            }
-        })
-        return arr
+        return TwoFAuthJson(json)
 
     }
 
-    parseProton(str: string){
+    parseProton(str: string): Array<IGenericJsonEntry> {
 
         const json = JSON.parse(str) as IProtonJson;
-        const obj = new ProtonJson(json)
-        const arr = Array<GenericJsonEntry>()
-        obj.items.forEach(item => {
-            try{
-                arr.push(new GenericJsonEntry(item))
-            }catch(e){
-                console.error(e)
-            }
-        })
-        return arr
+        return ProtonJson(json)
 
     }
 

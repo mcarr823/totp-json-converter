@@ -2,25 +2,19 @@ import { IGenericJsonEntry } from "@/interfaces/IGenericJsonEntry";
 import ITwoFAuthJson, { IToken } from "@/interfaces/ITwoFAuthJson";
 import GenericJson from "./GenericJson";
 
-export default class TwoFAuthJson{
-
-    items: Array<TwoFAuthJsonItem>;
-
-    constructor(
-        json: ITwoFAuthJson
-    ){
-        
-        const items = Array<TwoFAuthJsonItem>()
-        json.data.forEach(item => {
-            try{
-                items.push(new TwoFAuthJsonItem(item))
-            }catch(e){
-                console.error(e)
-            }
-        });
-        this.items = items
-
-    }
+export default function TwoFAuthJson(
+    json: ITwoFAuthJson
+){
+    
+    const items = Array<TwoFAuthJsonItem>()
+    json.data.forEach(item => {
+        try{
+            items.push(new TwoFAuthJsonItem(item))
+        }catch(e){
+            console.error(e)
+        }
+    });
+    return items
 
 }
 

@@ -2,25 +2,19 @@ import IBitwardenJson, { IItem } from "@/interfaces/IBitwardenJson";
 import GenericJson from "./GenericJson";
 import { IGenericJsonEntry } from "@/interfaces/IGenericJsonEntry";
 
-export default class BitwardenJson{
+export default function BitwardenJson(
+    json: IBitwardenJson
+){
 
-    items: Array<BitwardenJsonItem>;
-
-    constructor(
-        json: IBitwardenJson
-    ){
-
-        const items = Array<BitwardenJsonItem>()
-        json.items.forEach(item => {
-            try{
-                items.push(new BitwardenJsonItem(item))
-            }catch(e){
-                console.error(e)
-            }
-        })
-        this.items = items
-
-    }
+    const items = Array<BitwardenJsonItem>()
+    json.items.forEach(item => {
+        try{
+            items.push(new BitwardenJsonItem(item))
+        }catch(e){
+            console.error(e)
+        }
+    })
+    return items
 
 }
 
