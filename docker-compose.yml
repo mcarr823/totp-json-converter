@@ -1,0 +1,5 @@
+services:
+  app:
+    image: ghcr.io/mcarr823/totp-json-converter:main
+    ports:
+      - 3000:3000
