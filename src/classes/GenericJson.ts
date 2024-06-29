@@ -19,21 +19,28 @@ export default class GenericJson{
 
     constructor(str: string, format: string){
         
-        var entries = Array<IGenericJsonEntry>()
+        var iEntries = Array<IGenericJsonEntry>()
         
         if (format === FormatNames.AEGIS){
-            entries = this.parseAegis(str);
+            iEntries = this.parseAegis(str);
         }else if (format === FormatNames.BITWARDEN){
-            entries = this.parseBitwarden(str);
+            iEntries = this.parseBitwarden(str);
         }else if (format === FormatNames.TWOFAUTH){
-            entries = this.parseTwoFAuth(str);
+            iEntries = this.parseTwoFAuth(str);
         }else if (format === FormatNames.PROTON){
-            entries = this.parseProton(str);
+            iEntries = this.parseProton(str);
         }else{
             throw new Error("Import failed");
         }
         
-        this.entries = entries.map(e => new GenericJsonEntry(e))
+        this.entries = []
+        iEntries.forEach(e => {
+            try{
+                this.entries.push(new GenericJsonEntry(e))
+            }catch(e){
+                console.error(e)
+            }
+        })
 
     }
 
