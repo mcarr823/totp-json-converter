@@ -1,6 +1,8 @@
 # TOTP JSON Converter
 
-![example workflow](https://github.com/mcarr823/totp-json-converter/actions/workflows/jest.yml/badge.svg)
+![Jest Unit Test](https://github.com/mcarr823/totp-json-converter/actions/workflows/jest.yml/badge.svg)
+[![Docker Image CI](https://github.com/mcarr823/totp-json-converter/actions/workflows/docker-image.yml/badge.svg)](https://github.com/mcarr823/totp-json-converter/actions/workflows/docker-image.yml)
+[![Deploy to Pages](https://github.com/mcarr823/totp-json-converter/actions/workflows/nextjs.yml/badge.svg)](https://github.com/mcarr823/totp-json-converter/actions/workflows/nextjs.yml)
 
 This program converts JSON files between a few different 2FA providers' formats.
 
