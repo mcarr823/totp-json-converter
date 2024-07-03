@@ -1,4 +1,4 @@
-name: Docker Image amd64
+name: Docker Image aarch64
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
 
   build:
 
-    runs-on: [self-hosted, linux, x64]
+    runs-on: [self-hosted, linux, ARM64]
 
     permissions:
       contents: read
@@ -46,7 +46,7 @@ jobs:
           context: .
           push: true
           #tags: ${{ steps.meta.outputs.tags }}
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Generate artifact attestation

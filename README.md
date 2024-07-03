@@ -1,7 +1,8 @@
 # TOTP JSON Converter
 
 ![Jest Unit Test](https://github.com/mcarr823/totp-json-converter/actions/workflows/jest.yml/badge.svg)
-[![Docker Image CI](https://github.com/mcarr823/totp-json-converter/actions/workflows/docker-image.yml/badge.svg)](https://github.com/mcarr823/totp-json-converter/actions/workflows/docker-image.yml)
+[![Docker Image amd64](https://github.com/mcarr823/totp-json-converter/actions/workflows/docker-image.yml/badge.svg)](https://github.com/mcarr823/totp-json-converter/actions/workflows/docker-image.yml)
+[![Docker Image arm64](https://github.com/mcarr823/totp-json-converter/actions/workflows/docker-aarch64.yml/badge.svg)](https://github.com/mcarr823/totp-json-converter/actions/workflows/docker-aarch64.yml)
 [![Deploy to Pages](https://github.com/mcarr823/totp-json-converter/actions/workflows/nextjs.yml/badge.svg)](https://github.com/mcarr823/totp-json-converter/actions/workflows/nextjs.yml)
 
 This program converts JSON files between a few different 2FA providers' formats.
@@ -32,7 +33,11 @@ For example, several 2FA services support importing data which is stored in the 
 
 You can run this website on your own machine via the official docker image on GitHub.
 
-`docker run -p 3000:3000 ghcr.io/mcarr823/totp-json-converter:main`
+`docker run -p 3000:3000 ghcr.io/mcarr823/totp-json-converter:amd64`
+
+Or for ARM64 devices.
+
+`docker run -p 3000:3000 ghcr.io/mcarr823/totp-json-converter:arm64`
 
 Or by using the docker-compose.yml file included in this repository.
 
