@@ -2,14 +2,17 @@ import Heading from "@/components/Heading";
 import SubmitButton from "@/components/SubmitButton";
 import Wrapper from "@/components/Wrapper";
 import styles from '@/css/Textarea.module.css';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import GenericJson from "@/classes/GenericJson";
 import IAppData from "@/interfaces/IAppData";
 
 export default function Home({ inputFormat, outputFormat } : IAppData) {
 
-  // Replace state so that refreshing the page will take you back to the start
-  window.history.replaceState(null, "", "/")
+  // Replace state so that refreshing the page will take you back to the start.
+  // useEffect is used so that this step won't happen server-side during pre-render
+  useEffect(() => {
+    window.history.replaceState(null, "", "/")
+  })
 
   const [text, setText] = useState("");
   const [status, setStatus] = useState("Enter the JSON you want to convert");

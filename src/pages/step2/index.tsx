@@ -3,11 +3,15 @@ import ListItem from "@/components/ListItem";
 import Wrapper from "@/components/Wrapper";
 import { FormatNames } from "@/enums/FormatNames";
 import IAppData from "@/interfaces/IAppData";
+import { useEffect } from "react";
 
 export default function Home({ inputFormat, setOutputFormat } : IAppData) {
 
-  // Replace state so that refreshing the page will take you back to the start
-  window.history.replaceState(null, "", "/")
+  // Replace state so that refreshing the page will take you back to the start.
+  // useEffect is used so that this step won't happen server-side during pre-render
+  useEffect(() => {
+    window.history.replaceState(null, "", "/")
+  })
 
   return (
     <Wrapper>
