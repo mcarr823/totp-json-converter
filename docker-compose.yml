@@ -5,4 +5,4 @@ services:
     # ARM version
     # image: ghcr.io/mcarr823/totp-json-converter:arm64
     ports:
-      - 3000:3000
+      - 8080:8080

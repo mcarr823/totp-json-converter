@@ -1,9 +1,9 @@
 # Build from Microsoft's container, since it already contains
 # almost everything needed for this app.
-FROM mcr.microsoft.com/devcontainers/typescript-node:1-22-bullseye
+FROM mcr.microsoft.com/devcontainers/typescript-node:1-22-bullseye AS builder
 
 # Go into a workdir to build the app
-WORKDIR /usr/src/app
+WORKDIR /app
 
 # Grab the package definition and install the dependencies
 COPY package.json package-lock.json ./
@@ -13,5 +13,5 @@ RUN npm install
 COPY . ./
 RUN npm run build
 
-# Run the compiled app
-ENTRYPOINT ["npm", "run", "start"]
+FROM nginxinc/nginx-unprivileged:alpine3.19
+COPY --from=builder /app/out /usr/share/nginx/html

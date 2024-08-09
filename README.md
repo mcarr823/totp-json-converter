@@ -33,11 +33,11 @@ For example, several 2FA services support importing data which is stored in the 
 
 You can run this website on your own machine via the official docker image on GitHub.
 
-`docker run -p 3000:3000 ghcr.io/mcarr823/totp-json-converter:amd64`
+`docker run -p 8080:8080 ghcr.io/mcarr823/totp-json-converter:amd64`
 
 Or for ARM64 devices.
 
-`docker run -p 3000:3000 ghcr.io/mcarr823/totp-json-converter:arm64`
+`docker run -p 8080:8080 ghcr.io/mcarr823/totp-json-converter:arm64`
 
 Or by using the docker-compose.yml file included in this repository.
 
