@@ -1,18 +1,18 @@
-import IAppData from "@/interfaces/IAppData";
-import AppDataViewModel from "@/viewmodels/AppDataViewModel";
 import Link from "next/link";
 
 export default function ListItem(args : IListItem){
 
-    const { href, text, subtext } = args;
+    const { href, text, subtext, onClick } = args;
 
     const bottomMargin = typeof subtext !== 'undefined' ? 'mb-3 ' : '';
 
     return (
         <Link
+        onClick={onClick}
         href={href}
         className="lg:text-left group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
         rel="noopener noreferrer"
+        replace
         >
             <h2 className={ bottomMargin + `text-2xl font-semibold` }>
                 {text}
@@ -43,4 +43,5 @@ interface IListItem{
     href: string;
     text: string;
     subtext?: string;
+    onClick: () => void;
 }

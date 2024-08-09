@@ -1,20 +1,15 @@
 import Heading from "@/components/Heading";
 import SubmitButton from "@/components/SubmitButton";
 import Wrapper from "@/components/Wrapper";
-import { useRouter } from "next/router";
 import styles from '@/css/Textarea.module.css';
 import { useState } from "react";
 import GenericJson from "@/classes/GenericJson";
+import IAppData from "@/interfaces/IAppData";
 
-export default function Home() {
-    
-  const router = useRouter();
-  const query = router.query;
-  const { slug } = query;
+export default function Home({ inputFormat, outputFormat } : IAppData) {
 
-  const [inputFormat, outputFormat] = (typeof slug === 'undefined') ?
-    ['', ''] :
-    slug as Array<string>;
+  // Replace state so that refreshing the page will take you back to the start
+  window.history.replaceState(null, "", "/")
 
   const [text, setText] = useState("");
   const [status, setStatus] = useState("Enter the JSON you want to convert");
