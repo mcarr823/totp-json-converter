@@ -61,8 +61,8 @@ export default class GenericJson{
         const digits = 6;
         const period = 30;
         const algo = "sha1";
-        var name = '';
-        var issuer = '';
+        const name = '';
+        const issuer = '';
 
         if (typeof uri === 'undefined' || uri.length <= totpPrefix.length){
             const secret = '';
@@ -79,31 +79,51 @@ export default class GenericJson{
             return { secret, digits, period, algo, issuer, name }
         }
 
-        const nameAndIssuer = urlWithoutPrefix.substring(0, qIndex);
-        const decodedNameAndIssuer = decodeURIComponent(nameAndIssuer);
-        const cIndex = decodedNameAndIssuer.indexOf(':')
-        if (cIndex !== -1){
-            issuer = decodedNameAndIssuer.substring(0, cIndex)
-            name = decodedNameAndIssuer.substring(cIndex+1)
-        }else{
-            issuer = decodedNameAndIssuer
-        }
-
         // If the uri DOES have parameters, parse them as a
         // URLSearchParams object.
         // eg. otpauth://totp/Facebook:myusername?issuer=Facebook&secret=abc
+        return this.parseOtpAuthUriWithSearchParams(
+            qIndex,
+            urlWithoutPrefix,
+            digits,
+            period,
+            algo
+        )
+
+    }
+
+    static parseOtpAuthUriWithSearchParams(
+        qIndex: number,
+        urlWithoutPrefix: string,
+        defaultDigits: number,
+        defaultPeriod: number,
+        defaultAlgo: string
+    ): IGenericJsonTotpArgs {
+
+        const nameAndIssuer = urlWithoutPrefix.substring(0, qIndex);
+        const decodedNameAndIssuer = decodeURIComponent(nameAndIssuer);
+        const cIndex = decodedNameAndIssuer.indexOf(':')
+        var defaultIssuer: string
+        var name = ''
+        if (cIndex !== -1){
+            defaultIssuer = decodedNameAndIssuer.substring(0, cIndex)
+            name = decodedNameAndIssuer.substring(cIndex+1)
+        }else{
+            defaultIssuer = decodedNameAndIssuer
+        }
+
         const querystring = this.substringAfterFirst(urlWithoutPrefix, '?');
         const params = new URLSearchParams(querystring);
         const digitParam = params.get('digits');
         const periodParam = params.get('period');
-        return {
-            secret: params.get('secret') ?? '',
-            digits: digitParam !== null ? parseInt(digitParam) : digits,
-            period: periodParam !== null ? parseInt(periodParam) : period,
-            algo: params.get('algorithm') ?? algo,
-            issuer: params.get('issuer') ?? issuer,
-            name
-        }
+
+        const secret = params.get('secret') ?? ''
+        const digits = digitParam !== null ? parseInt(digitParam) : defaultDigits
+        const period = periodParam !== null ? parseInt(periodParam) : defaultPeriod
+        const algo = params.get('algorithm') ?? defaultAlgo
+        const issuer = params.get('issuer') ?? defaultIssuer
+
+        return { secret, digits, period, algo, issuer, name }
 
     }
 
