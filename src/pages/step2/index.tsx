@@ -10,7 +10,15 @@ export default function Home({ inputFormat, setOutputFormat } : IAppData) {
   // Replace state so that refreshing the page will take you back to the start.
   // useEffect is used so that this step won't happen server-side during pre-render
   useEffect(() => {
-    window.history.replaceState(null, "", "/")
+    
+    // Grab the existing path and remove the last 5 chars (step2 or step3)
+    // It's done this way so that the path replacement will work whether the site
+    // is hosted in a subdirectory or not
+    const pathName = window.location.pathname
+    const newPath = pathName.substring(0, pathName.length - 5)
+
+    window.history.replaceState(null, "", newPath)
+    
   })
 
   return (
